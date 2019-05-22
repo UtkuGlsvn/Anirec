@@ -7,12 +7,40 @@
     android:background="@drawable/anirec_bg"
     tools:context=".MainActivity">
 
+    <LinearLayout
+        android:id="@+id/ll1"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_marginTop="50dp"
+        android:layout_height="wrap_content">
 <de.hdodenhof.circleimageview.CircleImageView
+    android:layout_gravity="center_horizontal"
     android:id="@+id/imageview"
     android:src="@drawable/camimage"
     android:layout_width="75dp"
     android:layout_height="75dp"
-    android:layout_marginTop="50dp"
-    android:layout_alignParentTop="true"
-    android:layout_centerHorizontal="true"/>
+    />
+
+    <ImageView
+        android:id="@+id/imageview2"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="300dp"
+        android:layout_height="150dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:id="@+id/ll2"
+        android:layout_below="@+id/ll1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:text="Fotağraf Yükle"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_height="wrap_content"
+            />
+    </LinearLayout>
+
 </RelativeLayout>
