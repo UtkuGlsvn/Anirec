@@ -11,7 +11,7 @@
         android:id="@+id/ll1"
         android:layout_width="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="100dp"
         android:layout_height="wrap_content">
 <de.hdodenhof.circleimageview.CircleImageView
     android:layout_gravity="center_horizontal"
@@ -25,7 +25,7 @@
         android:id="@+id/imageview2"
         android:layout_gravity="center_horizontal"
         android:layout_width="300dp"
-        android:layout_height="150dp" />
+        android:layout_height="200dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -36,13 +36,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
-            android:enabled="false"
             android:id="@+id/save"
-            android:text="Fotağraf Yükle"
+            android:text="Fotoğraf Yükle"
             android:layout_width="wrap_content"
             android:layout_gravity="center_vertical|center_horizontal"
             android:layout_height="wrap_content"
             />
+        <TextView
+            android:id="@+id/txtview1"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/txtview2"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </RelativeLayout>

@@ -1,14 +1,19 @@
 package com.example.glsvn.anirec;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,6 +32,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -58,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         databaseReference2=firebaseDatabase.getReference().child("results");
         firebaseStorage=FirebaseStorage.getInstance();
         mStorageRef=firebaseStorage.getReference();
-
+        save.setEnabled(false);
         internetControl();
 
         imageview.setOnClickListener(new View.OnClickListener() {
@@ -120,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         pictureDialog.setTitle("Seciniz");
         String[] pictureDialogItems = {
                 "Galeriden fotağraf seçiniz",
-                "Kameradan fotağraf seçiniz"};
+                "Kameradan fotağraf çekiniz"};
         pictureDialog.setItems(pictureDialogItems,
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -142,14 +152,22 @@ public class MainActivity extends AppCompatActivity {
     void choosePhotoFromGallary() {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        galleryIntent.setType("image/*");
-        startActivityForResult(galleryIntent, 1);
+        if (galleryIntent.resolveActivity(getPackageManager()) != null) {
+            askForPermission(Manifest.permission.READ_EXTERNAL_STORAGE,1);
+            galleryIntent.setType("image/*");
+            startActivityForResult(galleryIntent, 1);
+        }
 
     }
 
     void takePhotoFromCamera() {
         Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, 2);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            askForPermission(Manifest.permission.CAMERA,2);
+            startActivityForResult(intent, 2);
+        }
+
     }
 
 
@@ -174,8 +192,38 @@ public class MainActivity extends AppCompatActivity {
                 case 2:
                     Bitmap photo = (Bitmap) data.getExtras().get("data");
                     imageview2.setImageBitmap(photo);
-                    //saveImage(photo);
-                    // imageUri = data.getData();
+
+                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                    photo.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
+
+                    //you can create a new file name "test.jpg" in sdcard folder.
+                    File f = new File(Environment.getExternalStorageDirectory()
+                            + File.separator + "Anirec.jpg");
+                    try {
+
+                        f.createNewFile();
+
+                        FileOutputStream fo = new FileOutputStream(f);
+                        fo.write(bytes.toByteArray());
+
+                        fo.close();
+
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    if (f.exists()) {
+
+                        Toast.makeText(this, "Image Found : "+f.getAbsolutePath().toString(), Toast.LENGTH_SHORT).show();
+
+                    }else{
+                        Toast.makeText(this, "Image Not Found", Toast.LENGTH_SHORT).show();
+                    }
+
+
                     //txt.setText("Resmi Galeriden seçiniz");
                     save.setEnabled(true);
                     break;
@@ -183,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
 
     void internetControl() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -195,4 +244,46 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+    private void askForPermission(String permission, Integer requestCode) {
+        if (ContextCompat.checkSelfPermission(MainActivity.this, permission) != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission)) {
+
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
+
+            } else {
+
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
+            }
+        } else {
+            Toast.makeText(this, "" + permission + " izin zaten verildi.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(ActivityCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED){
+            switch (requestCode) {
+                //Location
+                case 1:
+                    askForPermission(Manifest.permission.READ_EXTERNAL_STORAGE,1);
+                    break;
+                //Call
+                case 2:
+                    askForPermission(Manifest.permission.CAMERA,2);
+                    break;
+            }
+
+            Toast.makeText(this, "Permission granted", Toast.LENGTH_SHORT).show();
+        }else{
+            Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    
+
 }
