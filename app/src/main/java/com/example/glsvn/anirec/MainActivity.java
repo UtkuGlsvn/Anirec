@@ -1,6 +1,7 @@
 package com.example.glsvn.anirec;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -20,21 +22,24 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
     CircleImageView imageview;
     ImageView imageview2;
     Button save;
-
+    TextView txt;
+    ProgressDialog dialog;
     private Uri imageUri;
     private String imagelink;
 
@@ -62,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
         imageview = findViewById(R.id.imageview);
         imageview2 = findViewById(R.id.imageview2);
         save=findViewById(R.id.save);
+        txt = findViewById(R.id.txtview);
+
 
         firebaseDatabase=FirebaseDatabase.getInstance();
         databaseReference=firebaseDatabase.getReference().child("Images");
@@ -74,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         imageview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 showPictureDialog();
             }
         });
@@ -81,14 +90,14 @@ public class MainActivity extends AppCompatActivity {
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                kaydet();
+                new MyTask().execute((Void) null);
             }
         });
     }
 
 
-    public void kaydet() {
 
+    public void kaydet() {
         if (imageUri != null) {
 
             final StorageReference imagePath = mStorageRef.child("images/"+"plantImg");
@@ -114,8 +123,11 @@ public class MainActivity extends AppCompatActivity {
                         Uri downUri = task.getResult();
                         imagelink=downUri.toString();
                         databaseReference.setValue(imagelink);
-
-                        Toast.makeText(getBaseContext(),"Kaydedildi.",Toast.LENGTH_SHORT).show();
+                        getTxt();
+                        
+                        if (dialog != null) {
+                            dialog.dismiss();
+                        }
                     }
                 }
             });
@@ -256,8 +268,6 @@ public class MainActivity extends AppCompatActivity {
 
                 ActivityCompat.requestPermissions(MainActivity.this, new String[]{permission}, requestCode);
             }
-        } else {
-            Toast.makeText(this, "" + permission + " izin zaten verildi.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -284,6 +294,45 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    
+    void getTxt()
+    {
+        databaseReference2.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                txt.setText("Sonuçlar:"+dataSnapshot.getValue());
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
+    class MyTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog=new ProgressDialog(MainActivity.this);
+            dialog.setTitle("Yükleniyor...");
+            dialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            kaydet();
+
+            return null;
+        }
+
+
+    }
 
 }
+
+
+
+
