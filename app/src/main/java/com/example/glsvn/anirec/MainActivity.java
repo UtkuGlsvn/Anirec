@@ -41,7 +41,6 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -51,10 +50,11 @@ public class MainActivity extends AppCompatActivity {
     CircleImageView imageview;
     ImageView imageview2;
     Button save;
-    TextView txt;
+    TextView txt,txt2;
     ProgressDialog dialog;
     private Uri imageUri;
     private String imagelink;
+
 
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference,databaseReference2;
@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         imageview2 = findViewById(R.id.imageview2);
         save=findViewById(R.id.save);
         txt = findViewById(R.id.txtview);
+        txt2 = findViewById(R.id.txtview2);
 
 
         firebaseDatabase=FirebaseDatabase.getInstance();
@@ -84,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 showPictureDialog();
+                txt.setText("");
+                txt2.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -124,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                         imagelink=downUri.toString();
                         databaseReference.setValue(imagelink);
                         getTxt();
-                        
+
                         if (dialog != null) {
                             dialog.dismiss();
                         }
@@ -195,7 +198,6 @@ public class MainActivity extends AppCompatActivity {
                         final InputStream imageStream = getContentResolver().openInputStream(imageUri);
                         final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
                         imageview2.setImageBitmap(selectedImage);
-                        //txt.setVisibility(View.GONE);
                         save.setEnabled(true);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -208,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
                     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                     photo.compress(Bitmap.CompressFormat.JPEG, 40, bytes);
 
-                    //you can create a new file name "test.jpg" in sdcard folder.
                     File f = new File(Environment.getExternalStorageDirectory()
                             + File.separator + "Anirec.jpg");
                     try {
@@ -220,10 +221,7 @@ public class MainActivity extends AppCompatActivity {
 
                         fo.close();
 
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    } catch (Exception e) {
+                    }  catch (Exception e) {
                         e.printStackTrace();
                     }
 
@@ -235,8 +233,6 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(this, "Image Not Found", Toast.LENGTH_SHORT).show();
                     }
 
-
-                    //txt.setText("Resmi Galeriden seçiniz");
                     save.setEnabled(true);
                     break;
             }
@@ -277,11 +273,11 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(ActivityCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED){
             switch (requestCode) {
-                //Location
+
                 case 1:
                     askForPermission(Manifest.permission.READ_EXTERNAL_STORAGE,1);
                     break;
-                //Call
+
                 case 2:
                     askForPermission(Manifest.permission.CAMERA,2);
                     break;
@@ -299,7 +295,9 @@ public class MainActivity extends AppCompatActivity {
         databaseReference2.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                txt.setText("Sonuçlar:"+dataSnapshot.getValue());
+                txt2.setVisibility(View.VISIBLE);
+
+                txt.setText(dataSnapshot.child("0").getValue().toString().replace("{","").replace("}","")+"\n"+dataSnapshot.child("1").getValue().toString().replace("{","").replace("}",""));
 
             }
 
