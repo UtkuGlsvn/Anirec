@@ -1,6 +1,6 @@
 # ObjectDetection
 
-Object identification application using python imageio library.
+Object identification application using python ImageAI library.
 
 [Api Service](https://github.com/UtkuGlsvn/ObjectDetectionApiAndroid )
 
